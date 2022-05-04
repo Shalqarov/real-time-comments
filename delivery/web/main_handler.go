@@ -5,16 +5,6 @@ import (
 	"net/http"
 )
 
-func NewRouter(mux *http.ServeMux) {
-	fs := http.FileServer(http.Dir("./ui/static"))
-	mux.Handle("/static/", http.StripPrefix("/static", fs))
-
-	mux.HandleFunc("/", serveHome)
-	mux.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
-		// TODO serve ws
-	})
-}
-
 func serveHome(w http.ResponseWriter, r *http.Request) {
 	log.Println(r.URL)
 	if r.URL.Path != "/" {
@@ -25,4 +15,5 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
+	http.ServeFile(w, r, "./ui/html/home.html")
 }
