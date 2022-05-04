@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Comments</title>
+        <!-- TODO заменить путь -->
+        <link rel="stylesheet" href="../static/css/main.css">
+        <script type="text/javascript">
+            window.onload = function () {
+                var conn;
+                var author = document.getElementById("author");
+                var comment = document.getElementById("comment");
+                var log = document.getElementById("log");
+
+                function appendLog(item) {
+                    var doScroll = log.scrollTop > log.scrollHeight - log.clientHeight - 1;
+                    log.appendChild(item);
+                    if (doScroll) {
+                        log.scrollTop = log.scrollHeight - log.clientHeight;
+                    }
+                }
+
+                document.getElementById("form").onsubmit = function () {
+                    if (!conn) {
+                        return false;
+                    }
+                    if (!conn || !author.value || !comment.value) {
+                        return false;
+                    }
+
+                    conn.send(author.value);
+                    author.value = "";
+
+                    conn.send(comment.value);
+                    comment.value = "";
+
+                    return false;
+                };
+
+                if (window["WebSocket"]) {
+                    conn = new WebSocket("ws://" + document.location.host + "/ws");
+                    conn.onclose = function (evt) {
+                        var item = document.createElement("div");
+                        item.innerHTML = "<b>Connection closed.</b>";
+                        appendLog(item);
+                    };
+                    conn.onmessage = function (evt) {
+                        var messages = evt.data.split('\n');
+                        for (var i = 0; i < messages.length; i++) {
+                            var item = document.createElement("div");
+                            item.innerText = messages[i];
+                            appendLog(item);
+                        }
+                    };
+                } else {
+                    var item = document.createElement("div");
+                    item.innerHTML = "<b>Your browser does not support WebSockets.</b>";
+                    appendLog(item);
+                }
+            };
+        </script>
+    </head>
+
+    <body>
+        <form id="form">
+
+            <input type="text" id="author" size="26" autofocus placeholder="author" />
+            <br>
+            <textarea name="comment" id="" cols="30" rows="10" placeholder="comment"></textarea>
+            <br>
+            <input type="submit" value="Send" />
+        </form>
+        <div id="log"></div>
+    </body>
+
+</html>
